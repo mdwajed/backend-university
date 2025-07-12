@@ -37,6 +37,12 @@ export default defineFlatConfig([
           argsIgnorePattern: "^_",
         },
       ],
+      "@typescript-eslint/no-unsafe-assignment": [
+        "error",
+        {
+          ignorePattern: "^z\\.",
+        },
+      ],
     },
   },
 
