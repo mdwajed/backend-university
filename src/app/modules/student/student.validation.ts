@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // --- Utility Regex ---
 const phoneRegex = /^(\+?88)?01[3-9]\d{8}$/; // Valid Bangladeshi phone number format
-const birthDayRegex = /^\d{4}-\d{2}-\d{2}$/;
+const dateOfBirthRegex = /^\d{4}-\d{2}-\d{2}$/;
 // --- Enums ---
 const GenderEnum = z.enum(["male", "female"]);
 
@@ -20,27 +20,27 @@ const BloodGroupEnum = z.enum([
 // --- Sub-schemas ---
 
 const createUserNameZodSchema = z.object({
-  firstName: z.string().min(2).max(50),
-  middleName: z.string().max(50).optional(),
-  lastName: z.string().min(2).max(50).optional(),
+  firstName: z.string().trim().min(2).max(50),
+  middleName: z.string().trim().max(50).optional(),
+  lastName: z.string().trim().min(2).max(50).optional(),
 });
 
 const createGuardianZodSchema = z.object({
-  fatherName: z.string().min(2).max(100),
-  fatherOccupation: z.string().min(2).max(100),
+  fatherName: z.string().trim().min(2).max(100),
+  fatherOccupation: z.string().trim().min(2).max(100),
   fatherContactNo: z
     .string()
     .regex(phoneRegex, "Invalid Bangladeshi phone number"),
-  motherName: z.string().min(2).max(100),
-  motherOccupation: z.string().min(2).max(100),
+  motherName: z.string().trim().min(2).max(100),
+  motherOccupation: z.string().trim().min(2).max(100),
   motherContactNo: z
     .string()
     .regex(phoneRegex, "Invalid Bangladeshi phone number"),
 });
 
 const createLocalGuardianZodSchema = z.object({
-  name: z.string().min(2).max(100),
-  occupation: z.string().min(2).max(100),
+  name: z.string().trim().min(2).max(100),
+  occupation: z.string().trim().min(2).max(100),
   contactNo: z.string().regex(phoneRegex, "Invalid Bangladeshi phone number"),
   address: z.string().min(5),
 });
@@ -56,7 +56,7 @@ const createStudentZodSchema = z.object({
       gender: GenderEnum,
       dateOfBirth: z
         .string()
-        .regex(birthDayRegex, "Invalid Birthday Format")
+        .regex(dateOfBirthRegex, "Invalid date format (YYYY-MM-DD)")
         .optional(),
       contactNo: z
         .string()
@@ -70,8 +70,36 @@ const createStudentZodSchema = z.object({
       guardian: createGuardianZodSchema,
       localGuardian: createLocalGuardianZodSchema,
       profileImage: z.string().url().optional(),
+      admissionSemester: z.string(),
     }),
   }),
 });
 
-export default createStudentZodSchema;
+const updateStudentZodSchema = z.object({
+  body: z.object({
+    student: z
+      .object({
+        name: createUserNameZodSchema.partial(),
+        email: z.string().email().max(100).optional(),
+        gender: GenderEnum.optional(),
+        dateOfBirth: z
+          .string()
+          .regex(dateOfBirthRegex, "Invalid date format (YYYY-MM-DD)")
+          .optional(),
+        contactNo: z.string().regex(phoneRegex).optional(),
+        emergencyContactNo: z.string().regex(phoneRegex).optional(),
+        BloodGroup: BloodGroupEnum.optional(),
+        permanentAddress: z.string().min(5).optional(),
+        presentAddress: z.string().min(5).optional(),
+        guardian: createGuardianZodSchema.partial().optional(),
+        localGuardian: createLocalGuardianZodSchema.partial().optional(),
+        profileImage: z.string().url().optional(),
+        admissionSemester: z.string().optional(),
+      })
+      .partial(),
+  }),
+});
+export const studentZodValidations = {
+  createStudentZodSchema,
+  updateStudentZodSchema,
+};

@@ -34,6 +34,7 @@ export type TStudent = {
   guardian: Guardian;
   localGuardian: LocalGuardian;
   profileImage?: string;
+  admissionSemester: Types.ObjectId;
 };
 
 export interface StudentModel extends Model<TStudent> {

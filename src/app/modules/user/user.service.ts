@@ -1,20 +1,30 @@
-import { v4 as uuidv4 } from "uuid";
+import { StatusCodes } from "http-status-codes";
 import config from "../../config/index.js";
+import { ApiError } from "../../utils/ApiError.js";
+import { AcademicSemester } from "../academicSemester/academicSemester.model.js";
 import { TStudent } from "../student/student.interface.js";
 import { Student } from "../student/student.model.js";
 import { TUser } from "./user.interface.js";
 import { User } from "./user.model.js";
+import { generateStudentId } from "./user.utils.js";
 
-const createStudent = async (student: TStudent, password: string) => {
-  const user: Partial<TUser> = {};
-  user.password = password || (config.default_password as string);
-  user.role = "student";
-  user.id = uuidv4();
-  const result = await User.create(user);
+const createStudent = async (payload: TStudent, password: string) => {
+  const userData: Partial<TUser> = {};
+  userData.password = password || (config.default_password as string);
+  userData.role = "student";
+
+  const academicSemester = await AcademicSemester.findById(
+    payload.admissionSemester
+  );
+  if (!academicSemester) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid admission semester");
+  }
+  userData.id = await generateStudentId(academicSemester);
+  const result = await User.create(userData);
   if (Object.keys(result).length) {
-    student.id = result.id;
-    student.user = result._id;
-    const newStudent = await Student.create(student);
+    payload.id = result.id;
+    payload.user = result._id;
+    const newStudent = await Student.create(payload);
     return newStudent;
   }
   return result;

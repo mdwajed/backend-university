@@ -56,6 +56,7 @@ const studentSchema = new Schema<TStudent, StudentModel>(
     guardian: GuardianSchema,
     localGuardian: LocalGuardianSchema,
     profileImage: { type: String },
+    admissionSemester: { type: Schema.Types.ObjectId, ref: "AcademicSemester" },
   },
   {
     toJSON: {

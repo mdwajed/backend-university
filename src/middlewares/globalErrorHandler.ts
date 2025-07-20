@@ -1,7 +1,7 @@
 import { ErrorRequestHandler } from "express";
 import mongoose from "mongoose";
 import { ZodError } from "zod";
-import { ApiError } from "./ApiError.js";
+import { ApiError } from "../app/utils/ApiError.js";
 
 export const globalErrorHandler: ErrorRequestHandler = (
   err,
