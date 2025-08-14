@@ -1,27 +1,27 @@
 import { Router } from "express";
 import validateRequest from "../../../middlewares/validateRequest.js";
-import { AcademicFacultyControllers } from "./academicDepartment.controller.js";
+import { AcademicDepartmentControllers } from "./academicDepartment.controller.js";
 import { academicDepartmentZodValidations } from "./academicDepartment.validation.js";
 
 const router = Router();
-router.get("/", AcademicFacultyControllers.getAllAcademicFaculty);
+router.get("/", AcademicDepartmentControllers.getAllAcademicDepartment);
 router.get(
   "/:departmentId",
-  AcademicFacultyControllers.getSingleAcademicFaculty
+  AcademicDepartmentControllers.getSingleAcademicDepartment
 );
 router.post(
   "/create-department",
   validateRequest(
     academicDepartmentZodValidations.createAcademicDepartmentZodSchema
   ),
-  AcademicFacultyControllers.createAcademicFaculty
+  AcademicDepartmentControllers.createAcademicDepartment
 );
 router.patch(
   "/:departmentId",
   validateRequest(
     academicDepartmentZodValidations.updateAcademicDepartmentZodSchema
   ),
-  AcademicFacultyControllers.updateAcademicFaculty
+  AcademicDepartmentControllers.updateAcademicDepartment
 );
 
 export const AcademicDepartmentRoutes = router;

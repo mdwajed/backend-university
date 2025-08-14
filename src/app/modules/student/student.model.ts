@@ -56,7 +56,18 @@ const studentSchema = new Schema<TStudent, StudentModel>(
     guardian: GuardianSchema,
     localGuardian: LocalGuardianSchema,
     profileImage: { type: String },
-    admissionSemester: { type: Schema.Types.ObjectId, ref: "AcademicSemester" },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    admissionSemester: {
+      type: Schema.Types.ObjectId,
+      ref: "AcademicSemester",
+    },
+    academicDepartment: {
+      type: Schema.Types.ObjectId,
+      ref: "AcademicDepartment",
+    },
   },
   {
     toJSON: {
@@ -71,6 +82,7 @@ studentSchema.pre("find", function (next) {
   this.find({ isDeleted: { $ne: true } });
   next();
 });
+
 studentSchema.pre("findOne", function (next) {
   this.find({ isDeleted: { $ne: true } });
   next();
@@ -84,10 +96,10 @@ studentSchema.pre("aggregate", function (next) {
 
 // Virtual
 studentSchema.virtual("fullNamme").get(function () {
-  return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`;
+  return `${this?.name?.firstName} ${this?.name?.middleName} ${this?.name?.lastName}`;
 });
-studentSchema.statics.isUserExist = async function (email: string) {
-  const ExistingUser = await Student.findOne({ email });
+studentSchema.statics.isUserExist = async function (id: string) {
+  const ExistingUser = await Student.findOne({ id });
   return ExistingUser;
 };
 export const Student = model<TStudent, StudentModel>("Student", studentSchema);

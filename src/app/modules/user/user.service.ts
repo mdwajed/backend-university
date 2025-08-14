@@ -1,35 +1,159 @@
 import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 import config from "../../config/index.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { AcademicSemester } from "../academicSemester/academicSemester.model.js";
+import { TAdmin } from "../admin/admin.interface.js";
+import { Admin } from "../admin/admin.model.js";
+import { generateAdminId } from "../admin/admin.utils.js";
 import { TStudent } from "../student/student.interface.js";
 import { Student } from "../student/student.model.js";
-import { TUser } from "./user.interface.js";
-import { User } from "./user.model.js";
-import { generateStudentId } from "./user.utils.js";
 
-const createStudent = async (payload: TStudent, password: string) => {
+import { AcademicDepartment } from "../academicDepartment/academicDepartment.model.js";
+import { TFaculty } from "../faculty/faculty.interface.js";
+import { Faculty } from "../faculty/faculty.model.js";
+import { generateFacultyId } from "../faculty/faculty.utils.js";
+import { generateStudentId } from "../student/student.utils.js";
+import {
+  TCreateAdminReturn,
+  TCreateFacultyReturn,
+  TCreateStudentReturn,
+  TUser,
+} from "./user.interface.js";
+import { User } from "./user.model.js";
+
+const createStudent = async (
+  payload: TStudent,
+  password: string
+): Promise<TCreateStudentReturn> => {
   const userData: Partial<TUser> = {};
   userData.password = password || (config.default_password as string);
   userData.role = "student";
 
-  const academicSemester = await AcademicSemester.findById(
-    payload.admissionSemester
-  );
-  if (!academicSemester) {
+  const semester = await AcademicSemester.findById(payload.admissionSemester);
+  if (!semester) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid admission semester");
   }
-  userData.id = await generateStudentId(academicSemester);
-  const result = await User.create(userData);
-  if (Object.keys(result).length) {
-    payload.id = result.id;
-    payload.user = result._id;
-    const newStudent = await Student.create(payload);
-    return newStudent;
+
+  const session = await mongoose.startSession();
+  let result: TCreateStudentReturn;
+  try {
+    await session.withTransaction(async () => {
+      userData.id = await generateStudentId(semester);
+
+      // create new user transaction-1
+
+      const newUser = await User.create([userData], { session });
+      if (!newUser.length) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to Create User");
+      }
+      payload.id = newUser[0].id;
+      payload.user = newUser[0]._id;
+
+      // create new student transaction-2
+      const newStudent = await Student.create([payload], { session });
+      if (!newStudent.length) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to Create Student");
+      }
+      result = { user: newUser[0], student: newStudent[0] };
+    });
+    return result!;
+  } catch (error) {
+    console.error("Create student failed:", error);
+    throw error;
+  } finally {
+    await session.endSession();
   }
-  return result;
 };
 
+const createAdmin = async (
+  password: string,
+  payload: TAdmin
+): Promise<TCreateAdminReturn> => {
+  const userData: Partial<TUser> = {};
+  userData.password = password || config.default_password;
+  userData.role = "admin";
+
+  const session = await mongoose.startSession();
+  let result: TCreateAdminReturn;
+  try {
+    await session.withTransaction(async () => {
+      userData.id = await generateAdminId();
+
+      const user = await User.create([userData], { session });
+      if (!user.length) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to Create User");
+      }
+      payload.id = user[0].id;
+      payload.user = user[0]._id;
+
+      const admin = await Admin.create([payload], { session });
+      if (!admin.length) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to Create Admin");
+      }
+      result = { user: user[0], admin: admin[0] };
+    });
+    return result!;
+  } catch (error) {
+    console.error("Create admin failed:", error);
+    throw error;
+  } finally {
+    await session.endSession();
+  }
+};
+
+const createFaculty = async (
+  password: string,
+  payload: TFaculty
+): Promise<TCreateFacultyReturn> => {
+  const userData: Partial<TUser> = {};
+
+  userData.password = password || config.default_password;
+  userData.role = "faculty";
+
+  const academicDepartment = await AcademicDepartment.findById(
+    payload.academicDepartment
+  );
+  if (!academicDepartment) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Academic Department is not Found"
+    );
+  }
+  const session = await mongoose.startSession();
+
+  let result: TCreateFacultyReturn;
+  try {
+    await session.withTransaction(async () => {
+      userData.id = await generateFacultyId();
+
+      const createUser = await User.create([userData], { session });
+      if (!createUser) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user");
+      }
+      payload.id = createUser[0].id;
+      payload.user = createUser[0]._id;
+
+      const createFaculty = await Faculty.create([payload], { session });
+      if (!createFaculty) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create faculty");
+      }
+
+      result = {
+        user: createUser[0],
+        faculty: createFaculty[0],
+      };
+    });
+    return result!;
+  } catch (error) {
+    console.error("Create faculty failed:", error);
+    throw error;
+  } finally {
+    await session.endSession();
+  }
+};
 export const UserService = {
   createStudent,
+  createAdmin,
+  createFaculty,
 };

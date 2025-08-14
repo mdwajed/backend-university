@@ -1,51 +1,51 @@
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
-import { AcademicFacultyService } from "./academicFaculty.service.js";
+import { AcademicDepartmentService } from "./academicDepartment.service.js";
 
-const createAcademicFaculty = catchAsync(async (req, res) => {
-  const academicFaculty = await AcademicFacultyService.createAcademicFaculty(
-    req.body
-  );
+const createAcademicDepartment = catchAsync(async (req, res) => {
+  const academicFaculty =
+    await AcademicDepartmentService.createAcademicDepartment(req.body);
   sendResponse(res, {
     success: true,
-    message: "Academic Faculty Created successfully",
+    message: "Academic Department Created successfully",
     data: academicFaculty,
   });
 });
 
-const getAllAcademicFaculty = catchAsync(async (_req, res) => {
-  const result = await AcademicFacultyService.getAllAcademicFaculty();
+const getAllAcademicDepartment = catchAsync(async (_req, res) => {
+  const result = await AcademicDepartmentService.getAllAcademicDepartment();
   sendResponse(res, {
     success: true,
-    message: "Academic Faculty Data Retrieve successfully",
+    message: "Academic Departments Data Retrieve successfully",
     data: result,
   });
 });
-const getSingleAcademicFaculty = catchAsync(async (req, res) => {
-  const result = await AcademicFacultyService.getSingleAcademicFaculty(
-    req.params.facultyId
+const getSingleAcademicDepartment = catchAsync(async (req, res) => {
+  const result = await AcademicDepartmentService.getSingleAcademicDepartment(
+    req.params.departmentId
   );
   sendResponse(res, {
     success: true,
-    message: "Academic Faculty Data Retrieve successfully",
+    message: "Academic Department Data Retrieve successfully",
     data: result,
   });
 });
-const updateAcademicFaculty = catchAsync(async (req, res) => {
-  const academicSemesters = await AcademicFacultyService.updateAcademicFaculty(
-    req.params.facultyId,
-    req.body
-  );
+const updateAcademicDepartment = catchAsync(async (req, res) => {
+  const academicSemesters =
+    await AcademicDepartmentService.updateAcademicDepartment(
+      req.params.departmentId,
+      req.body
+    );
   sendResponse(res, {
     success: true,
-    message: "Academic Faculty Data Updated successfully",
+    message: "Academic Department Data Updated successfully",
     data: academicSemesters,
   });
 });
 
-export const AcademicFacultyControllers = {
-  createAcademicFaculty,
-  getAllAcademicFaculty,
-  getSingleAcademicFaculty,
-  updateAcademicFaculty,
+export const AcademicDepartmentControllers = {
+  createAcademicDepartment,
+  getAllAcademicDepartment,
+  getSingleAcademicDepartment,
+  updateAcademicDepartment,
 };

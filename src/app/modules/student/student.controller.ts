@@ -2,16 +2,18 @@ import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { StudentService } from "./student.service.js";
 
-const getAllStudents = catchAsync(async (_req, res) => {
-  const result = await StudentService.getAllStudents();
+const getAllStudents = catchAsync(async (req, res) => {
+  const result = await StudentService.getAllStudents(req.query);
+
   sendResponse(res, {
     success: true,
     message: "Students Retrieve Successfully",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 const getStudentById = catchAsync(async (req, res) => {
-  const result = await StudentService.getStudentById(req.params.studentId);
+  const result = await StudentService.getStudentById(req.params.id);
   sendResponse(res, {
     success: true,
     message: "Student Retrieve Successfully",
@@ -20,7 +22,7 @@ const getStudentById = catchAsync(async (req, res) => {
 });
 const updateStudent = catchAsync(async (req, res) => {
   const student = await StudentService.updateStudent(
-    req.params.studentId,
+    req.params.id,
     req.body.student
   );
   sendResponse(res, {
@@ -30,7 +32,7 @@ const updateStudent = catchAsync(async (req, res) => {
   });
 });
 const deleteStudent = catchAsync(async (req, res) => {
-  const result = await StudentService.deleteStudent(req.params.studentId);
+  const result = await StudentService.deleteStudent(req.params.id);
   sendResponse(res, {
     success: true,
     message: "Student Data Delete Successfully",

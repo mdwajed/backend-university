@@ -14,10 +14,10 @@ type TMeta = {
 };
 const sendResponse = <T>(res: Response, data: TResponse<T>) => {
   return res.status(data.statusCode || StatusCodes.OK).json({
+    ...(data.meta && { meta: data.meta }),
     success: data.success ?? true,
     message: data.message,
     data: data.data,
-    ...(data.meta && { meta: data.meta }),
   });
 };
 

@@ -71,6 +71,7 @@ const createStudentZodSchema = z.object({
       localGuardian: createLocalGuardianZodSchema,
       profileImage: z.string().url().optional(),
       admissionSemester: z.string(),
+      academicDepartment: z.string(),
     }),
   }),
 });
@@ -80,21 +81,21 @@ const updateStudentZodSchema = z.object({
     student: z
       .object({
         name: createUserNameZodSchema.partial(),
-        email: z.string().email().max(100).optional(),
-        gender: GenderEnum.optional(),
+        email: z.string().email().max(100),
+        gender: GenderEnum,
         dateOfBirth: z
           .string()
-          .regex(dateOfBirthRegex, "Invalid date format (YYYY-MM-DD)")
-          .optional(),
-        contactNo: z.string().regex(phoneRegex).optional(),
-        emergencyContactNo: z.string().regex(phoneRegex).optional(),
-        BloodGroup: BloodGroupEnum.optional(),
-        permanentAddress: z.string().min(5).optional(),
-        presentAddress: z.string().min(5).optional(),
-        guardian: createGuardianZodSchema.partial().optional(),
-        localGuardian: createLocalGuardianZodSchema.partial().optional(),
-        profileImage: z.string().url().optional(),
-        admissionSemester: z.string().optional(),
+          .regex(dateOfBirthRegex, "Invalid date format (YYYY-MM-DD)"),
+        contactNo: z.string().regex(phoneRegex),
+        emergencyContactNo: z.string().regex(phoneRegex),
+        BloodGroup: BloodGroupEnum,
+        permanentAddress: z.string().min(5),
+        presentAddress: z.string().min(5),
+        guardian: createGuardianZodSchema.partial(),
+        localGuardian: createLocalGuardianZodSchema.partial(),
+        profileImage: z.string().url(),
+        admissionSemester: z.string(),
+        academicDepartment: z.string(),
       })
       .partial(),
   }),
