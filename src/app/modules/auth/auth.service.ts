@@ -1,11 +1,12 @@
 import bcrypt from "bcrypt";
 import { StatusCodes } from "http-status-codes";
-import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
+import { JwtPayload, SignOptions } from "jsonwebtoken";
 import config from "../../config/index.js";
 import { ApiError } from "../../utils/ApiError.js";
+import { sendEmail } from "../../utils/sendEmail.js";
 import { User } from "../user/user.model.js";
 import { TAuth, TPasswordChange } from "./auth.interface.js";
-import { tokenGeneration } from "./auth.utils.js";
+import { tokenGeneration, verifyToken } from "./auth.utils.js";
 const authUser = async (payload: TAuth) => {
   // 1. check user
   const user = await User.findOne({ id: payload?.id }).select("+password");
@@ -89,7 +90,7 @@ const changePassword = async (
     {
       password: hashedNewPasswprd,
       needPasswordChange: false,
-      PasswordChangedAt: new Date(),
+      passwordChangedAt: new Date(),
     },
     { new: true }
   );
@@ -98,10 +99,7 @@ const changePassword = async (
 
 const refreshToken = async (token: string) => {
   // check token is valid
-  const decoded = jwt.verify(
-    token,
-    config.refresh_token_secret as string
-  ) as JwtPayload;
+  const decoded = verifyToken(token, config.refresh_token_secret as string);
   const { userId, iat } = decoded;
   // 1. check user
   const user = await User.findOne({ id: userId }).select("+password");
@@ -144,8 +142,94 @@ const refreshToken = async (token: string) => {
   );
   return { accessToken };
 };
+const forgetPassword = async (userId: string) => {
+  // 1. check user
+  const user = await User.findOne({ id: userId }).select("+password");
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, `User is not found !`);
+  }
+  // 1. check delation
+  const isDeleted = user?.isDeleted;
+  if (isDeleted) {
+    throw new ApiError(StatusCodes.FORBIDDEN, `User is already deleted !`);
+  }
+  // 1. check status
+  const userStatus = user?.status;
+  if (userStatus === "blocked") {
+    throw new ApiError(StatusCodes.FORBIDDEN, `This User is blocked !`);
+  }
+
+  // create token
+  const jwtPayload = {
+    userId: user.id,
+    role: user.role,
+  };
+  // geneeate access token
+  const resetToken = tokenGeneration(
+    jwtPayload,
+    config.access_token_secret as string,
+    "5m"
+  );
+  const resetUrLink = `${config.reset_pass_url}?id=${user.id}&token=${resetToken}`;
+
+  await sendEmail(
+    user.email,
+    `<div>
+<p>Dear User,</p>
+<p>Your Password reset link 
+<a href=${resetUrLink}>
+<button>Reset Password</button>
+</a>
+</p>
+</div> `
+  );
+  console.log(resetUrLink);
+};
+
+const resetPassword = async (
+  payload: { id: string; newPassword: string },
+  token: string
+) => {
+  // 1. check user
+  const user = await User.findOne({ id: payload?.id }).select("+password");
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, `User is not found !`);
+  }
+  // 1. check delation
+  const isDeleted = user?.isDeleted;
+  if (isDeleted) {
+    throw new ApiError(StatusCodes.FORBIDDEN, `User is already deleted !`);
+  }
+  // 1. check status
+  const userStatus = user?.status;
+  if (userStatus === "blocked") {
+    throw new ApiError(StatusCodes.FORBIDDEN, `This User is blocked !`);
+  }
+  // check token is valid
+  const decoded = verifyToken(token, config.access_token_secret as string);
+  if (payload?.id !== decoded.userId) {
+    throw new ApiError(StatusCodes.FORBIDDEN, `You are not authorize !`);
+  }
+  const hashedNewPasswprd = await bcrypt.hash(
+    payload?.newPassword,
+    Number(config.bcrypt_salt_round)
+  );
+  await User.findOneAndUpdate(
+    {
+      id: decoded.userId,
+      role: decoded.role,
+    },
+    {
+      password: hashedNewPasswprd,
+      needPasswordChange: false,
+      PasswordChangedAt: new Date(),
+    }
+  );
+};
 export const AuthService = {
   authUser,
   changePassword,
   refreshToken,
+  forgetPassword,
+  resetPassword,
 };

@@ -1,15 +1,16 @@
 import { TAdmin } from "../admin/admin.interface.js";
-import { TUserRole } from "../auth/auth.const.js";
+
 import { TFaculty } from "../faculty/faculty.interface.js";
 import { TStudent } from "../student/student.interface.js";
-
+import { TUserRole, TUserStatus } from "./user.constant.js";
 export interface TUser {
   id: string;
+  email: string;
   password: string;
   needPasswordChange: boolean;
   passwordChangedAt?: Date;
   role: TUserRole;
-  status: "in_progress" | "blocked";
+  status: TUserStatus;
   isDeleted: boolean;
 }
 

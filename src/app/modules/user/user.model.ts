@@ -1,10 +1,16 @@
 import bcrypt from "bcrypt";
 import { model, Schema } from "mongoose";
 import config from "../../config/index.js";
+import { UserRoles, UserStatus } from "./user.constant.js";
 import { TUser } from "./user.interface.js";
 export const userSchema = new Schema<TUser>(
   {
     id: { type: String, required: true, unique: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     password: {
       type: String,
       required: true,
@@ -14,11 +20,11 @@ export const userSchema = new Schema<TUser>(
     passwordChangedAt: { type: Date },
     role: {
       type: String,
-      enum: ["admin", "student", "faculty"],
+      enum: UserRoles,
     },
     status: {
       type: String,
-      enum: ["in_progress", "blocked"],
+      enum: UserStatus,
       default: "in_progress",
     },
     isDeleted: {
@@ -26,6 +32,7 @@ export const userSchema = new Schema<TUser>(
       default: false,
     },
   },
+
   {
     timestamps: true,
   }

@@ -6,27 +6,36 @@ import {
   UserName,
 } from "./student.interface.js";
 
-const UserNameSchema = new Schema<UserName>({
-  firstName: { type: String, required: true },
-  middleName: { type: String },
-  lastName: { type: String },
-});
+const UserNameSchema = new Schema<UserName>(
+  {
+    firstName: { type: String, required: true },
+    middleName: { type: String },
+    lastName: { type: String },
+  },
+  { _id: false }
+);
 
-const GuardianSchema = new Schema<Guardian>({
-  fatherName: { type: String, required: true },
-  fatherOccupation: { type: String, required: true },
-  fatherContactNo: { type: String, required: true },
-  motherName: { type: String, required: true },
-  motherOccupation: { type: String, required: true },
-  motherContactNo: { type: String, required: true },
-});
+const GuardianSchema = new Schema<Guardian>(
+  {
+    fatherName: { type: String, required: true },
+    fatherOccupation: { type: String, required: true },
+    fatherContactNo: { type: String, required: true },
+    motherName: { type: String, required: true },
+    motherOccupation: { type: String, required: true },
+    motherContactNo: { type: String, required: true },
+  },
+  { _id: false }
+);
 
-const LocalGuardianSchema = new Schema({
-  name: { type: String, required: true },
-  occupation: { type: String, required: true },
-  contactNo: { type: String, required: true },
-  address: { type: String, required: true },
-});
+const LocalGuardianSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    occupation: { type: String, required: true },
+    contactNo: { type: String, required: true },
+    address: { type: String, required: true },
+  },
+  { _id: false }
+);
 const studentSchema = new Schema<TStudent, StudentModel>(
   {
     id: { type: String, required: [true, "ID is required"], unique: true },

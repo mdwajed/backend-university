@@ -1,4 +1,4 @@
-import jwt, { SignOptions } from "jsonwebtoken";
+import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 
 type JWTPayload = {
   userId: string;
@@ -11,4 +11,8 @@ export const tokenGeneration = (
   expiresIn: SignOptions["expiresIn"]
 ): string => {
   return jwt.sign(payload, secret, { expiresIn });
+};
+
+export const verifyToken = (token: string, secret: string) => {
+  return jwt.verify(token, secret) as JwtPayload;
 };
