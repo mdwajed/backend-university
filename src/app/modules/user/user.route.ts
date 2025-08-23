@@ -1,9 +1,8 @@
 import express, { NextFunction, Request, Response } from "express";
 import auth from "../../../middlewares/auth.js";
 import validateRequest from "../../../middlewares/validateRequest.js";
-import { adminZodValidations } from "../admin/admin.validation.js";
-
 import { upload } from "../../utils/uploadImgToCloudinary.js";
+import { adminZodValidations } from "../admin/admin.validation.js";
 import { FacultyZodValidation } from "../faculty/faculty.validation.js";
 import { studentZodValidations } from "../student/student.validation.js";
 import { UserController } from "./user.controller.js";
@@ -29,6 +28,11 @@ router.post(
 router.post(
   "/create-faculty",
   auth("admin"),
+  upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
   validateRequest(FacultyZodValidation.createFacultyZodSchema),
   UserController.createFaculty
 );

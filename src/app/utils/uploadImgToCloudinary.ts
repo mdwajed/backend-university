@@ -5,7 +5,7 @@ import multer from "multer";
 cloudinary.config({
   cloud_name: "dldvtyudl",
   api_key: "953119324629868",
-  api_secret: "sB6EVREvy_UL8tBW9MCwFATYy6E", // Click 'View API Keys' above to copy your API secret
+  api_secret: "sB6EVREvy_UL8tBW9MCwFATYy6E",
 });
 export const uploadImgToCloudinary = async (imgName: string, path: string) => {
   // Upload an image

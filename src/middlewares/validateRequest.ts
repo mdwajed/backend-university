@@ -12,3 +12,10 @@ const validateRequest = (schema: AnyZodObject): RequestHandler => {
   });
 };
 export default validateRequest;
+
+// const validateRequest = (schema: AnyZodObject): RequestHandler => {
+//   return catchAsync(async (req, res, next): Promise<void> => {
+//     await schema.parseAsync(req.body); // validate directly
+//     next();
+//   });
+// };

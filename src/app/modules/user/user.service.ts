@@ -113,6 +113,7 @@ const createAdmin = async (
 };
 
 const createFaculty = async (
+  file: any,
   password: string,
   payload: TFaculty
 ): Promise<TCreateFacultyReturn> => {
@@ -135,15 +136,21 @@ const createFaculty = async (
   let result: TCreateFacultyReturn;
   try {
     await session.withTransaction(async () => {
+      // generate student ia
       userData.id = await generateFacultyId();
-
+      // generate imgName,path
+      const imgName = `${userData.id}${payload?.name.firstName}`;
+      const path = file?.path;
+      // send image to cloudinary
+      const { secure_url } = await uploadImgToCloudinary(imgName, path);
       const createUser = await User.create([userData], { session });
       if (!createUser) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user");
       }
       payload.id = createUser[0].id;
       payload.user = createUser[0]._id;
-
+      payload.profileImage = secure_url;
+      // create new student transaction-2
       const createFaculty = await Faculty.create([payload], { session });
       if (!createFaculty) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create faculty");

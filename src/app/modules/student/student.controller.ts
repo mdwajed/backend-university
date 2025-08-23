@@ -9,7 +9,7 @@ const getAllStudents = catchAsync(async (req, res) => {
     success: true,
     message: "Students Retrieve Successfully",
     meta: result.meta,
-    data: result.data,
+    data: result.student,
   });
 });
 const getStudentById = catchAsync(async (req, res) => {

@@ -2,18 +2,12 @@ import { StatusCodes } from "http-status-codes";
 import mongoose from "mongoose";
 import QueryBuilder from "../../builder/QueryBuilder.js";
 import { ApiError } from "../../utils/ApiError.js";
-import calculatePagination from "../../utils/calculatePagination.js";
 import { User } from "../user/user.model.js";
 import { studentSearchableField } from "./student.constant.js";
 import { TStudent } from "./student.interface.js";
 import { Student } from "./student.model.js";
 
 const getAllStudents = async (query: Record<string, unknown>) => {
-  const { page, limit } = calculatePagination({
-    page: Number(query.page),
-    limit: Number(query.limit),
-  });
-
   const baseQuery = Student.find()
     .populate("user")
     .populate("admissionSemester")
@@ -23,27 +17,19 @@ const getAllStudents = async (query: Record<string, unknown>) => {
         path: "academicFaculty",
       },
     });
-  const studentQueryBuilder = new QueryBuilder(baseQuery, query)
+  const studentQuery = new QueryBuilder(baseQuery, query)
     .search(studentSearchableField)
     .filter()
     .sort()
     .paginate()
     .fields();
 
-  const result = await studentQueryBuilder.modelQuery;
-
-  const totalQueryBuilder = new QueryBuilder(Student.find(), query)
-    .search(studentSearchableField)
-    .filter();
-  const total = await totalQueryBuilder.modelQuery.countDocuments();
+  const meta = await studentQuery.countTotal();
+  const student = await studentQuery.modelQuery;
 
   return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
-    data: result,
+    meta,
+    student,
   };
 };
 

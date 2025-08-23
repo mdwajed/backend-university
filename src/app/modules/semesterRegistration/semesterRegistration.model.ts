@@ -19,7 +19,7 @@ const semesterRegistrationSchema = new Schema<TSemesterRegistration>(
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     minCredit: { type: Number, default: 3 },
-    maxCredit: { type: Number, default: 15 },
+    maxCredit: { type: Number, default: 6 },
   },
   { timestamps: true }
 );

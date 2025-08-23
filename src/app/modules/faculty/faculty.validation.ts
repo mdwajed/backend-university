@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { BloodGroup, Gender } from "./faculty.constant.js";
 
-export const userNameZodSchema = z.object({
+const userNameZodSchema = z.object({
   firstName: z
     .string({ required_error: "First Name is required" })
     .max(20, "Name cannot be more than 20 characters")
@@ -14,7 +14,7 @@ export const userNameZodSchema = z.object({
     .max(20, "Name cannot be more than 20 characters"),
 });
 
-export const createFacultyZodSchema = z.object({
+const createFacultyZodSchema = z.object({
   body: z.object({
     password: z.string().max(20),
     faculty: z.object({
@@ -56,7 +56,7 @@ export const createFacultyZodSchema = z.object({
   }),
 });
 
-export const updateFacultyZodSchema = z.object({
+const updateFacultyZodSchema = z.object({
   body: z.object({
     faculty: z
       .object({
